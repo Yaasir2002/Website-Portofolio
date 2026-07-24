@@ -3,18 +3,23 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 export default function ProtectedRoute() {
-  const { token, loading } = useContext(AuthContext);
+  const { token, user, loading } = useContext(AuthContext);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-dark-900 text-accent-cyan">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-accent-cyan border-t-transparent rounded-full animate-spin" />
-          <span className="font-display text-sm font-semibold">Memuat Autentikasi...</span>
+          <div className="w-10 h-10 border-4 border-accent-cyan border-t-transparent rounded-full animate-spin shadow-glow-cyan" />
+          <span className="font-display text-sm font-semibold">Memverifikasi Sesi Keamanan Admin...</span>
         </div>
       </div>
     );
   }
 
-  return token ? <Outlet /> : <Navigate to="/admin/login" replace />;
+  // Strict URL & Token Check: Must have valid JWT token AND logged in user object
+  if (!token || !user) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
+  return <Outlet />;
 }
