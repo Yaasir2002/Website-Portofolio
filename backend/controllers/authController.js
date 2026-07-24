@@ -1,10 +1,52 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const User = require('../models/User');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'super_secret_jwt_key_portfolio_2026_change_this_in_production', {
     expiresIn: '7d',
   });
+};
+
+// Helper function to send email via SMTP or fallback preview
+const sendResetEmail = async (email, resetUrl) => {
+  if (process.env.SMTP_HOST && process.env.SMTP_EMAIL) {
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT || 587,
+      auth: {
+        user: process.env.SMTP_EMAIL,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: `"Portfolio Admin Security" <${process.env.FROM_EMAIL || process.env.SMTP_EMAIL}>`,
+      to: email,
+      subject: 'Instruksi Reset Password Admin Dashboard',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0B0F19; color: #ffffff; border-radius: 12px;">
+          <h2 style="color: #06B6D4;">Reset Password Admin Dashboard</h2>
+          <p>Anda menerima email ini karena ada permintaan reset password untuk akun admin Anda.</p>
+          <p>Silakan klik tombol di bawah ini untuk menyetel ulang password Anda (berlaku selama 1 jam):</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetUrl}" style="background-color: #06B6D4; color: #0B0F19; font-weight: bold; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">Reset Password Sekarang</a>
+          </div>
+          <p style="font-size: 12px; color: #9CA3AF;">Atau salin tautan ini ke peramban Anda:<br><a href="${resetUrl}" style="color: #00F0FF;">${resetUrl}</a></p>
+          <p style="font-size: 12px; color: #6B7280; margin-top: 30px;">Jika Anda tidak merasa meminta reset password, abaikan pesan ini.</p>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+  } else {
+    console.log('\n======================================================');
+    console.log('✉️  [RESET PASSWORD EMAIL SIMULATION]');
+    console.log(`To: ${email}`);
+    console.log(`Reset URL: ${resetUrl}`);
+    console.log('======================================================\n');
+  }
 };
 
 // @desc Auth admin & get token
@@ -35,7 +77,7 @@ const loginAdmin = async (req, res) => {
 // @desc Register a new admin account via API
 // @route POST /api/auth/register
 const registerAdmin = async (req, res) => {
-  const { username, password, name, title, secretKey } = req.body;
+  const { username, password, name, title, email, secretKey } = req.body;
 
   try {
     if (!username || !password) {
@@ -74,7 +116,7 @@ const registerAdmin = async (req, res) => {
 
       if (!isAuthorized) {
         return res.status(403).json({
-          message: 'Pendaftaran admin memerlukan token admin yang sedang login atau secretKey yang valid',
+          message: 'Pendaftaran admin memerlukan Kode Keamanan (Secret Key) yang valid atau token admin aktif',
         });
       }
     }
@@ -90,6 +132,7 @@ const registerAdmin = async (req, res) => {
       password, // Hashed automatically by Mongoose pre('save') hook
       name: name || 'Alex Rivera',
       title: title || 'Creative Designer & Full-Stack Developer',
+      email: email || 'contact@alexrivera.dev',
     });
 
     const createdUser = await user.save();
@@ -99,8 +142,98 @@ const registerAdmin = async (req, res) => {
       username: createdUser.username,
       name: createdUser.name,
       title: createdUser.title,
+      email: createdUser.email,
       token: generateToken(createdUser._id),
       message: 'Akun Admin baru berhasil didaftarkan!',
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc Forgot password - Request reset email
+// @route POST /api/auth/forgot-password
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    if (!email) {
+      return res.status(400).json({ message: 'Alamat email wajib diisi' });
+    }
+
+    // Find user by email or username
+    const user = await User.findOne({
+      $or: [{ email: email.toLowerCase() }, { username: email }],
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'Akun admin dengan email/username tersebut tidak ditemukan' });
+    }
+
+    // Generate unhashed reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+
+    // Hash token and store in user document
+    user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+    // Expire token in 1 hour
+    user.resetPasswordExpire = Date.now() + 60 * 60 * 1000;
+
+    await user.save();
+
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const resetUrl = `${clientUrl}/admin/login?mode=reset&token=${resetToken}`;
+
+    try {
+      await sendResetEmail(user.email || email, resetUrl);
+      res.json({
+        message: 'Instruksi reset password telah dikirim ke email Anda!',
+        resetUrl: process.env.NODE_ENV !== 'production' ? resetUrl : undefined, // Provided for easy dev testing
+      });
+    } catch (mailError) {
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save();
+      return res.status(500).json({ message: 'Gagal mengirim email reset password.' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc Reset password using token
+// @route POST /api/auth/reset-password/:token
+const resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  try {
+    if (!password || password.length < 6) {
+      return res.status(400).json({ message: 'Password baru minimal 6 karakter' });
+    }
+
+    // Hash token from URL param
+    const resetPasswordToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Token reset password tidak valid atau sudah kadaluarsa' });
+    }
+
+    // Set new password & clear reset token
+    user.password = password; // Will be hashed via pre('save') hook
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+
+    res.json({
+      message: 'Password Anda berhasil diperbarui! Silakan login dengan password baru.',
+      token: generateToken(user._id),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -149,7 +282,11 @@ const getProfile = async (req, res) => {
 // @route PUT /api/auth/profile
 const updateProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    // Find the primary site profile document (first user) or fallback to current logged in admin
+    let user = await User.findOne();
+    if (!user) {
+      user = await User.findById(req.user._id);
+    }
 
     if (user) {
       user.name = req.body.name !== undefined ? req.body.name : user.name;
@@ -190,15 +327,19 @@ const updateProfile = async (req, res) => {
         user.toolsIcons = req.body.toolsIcons;
       }
 
+      // Only update password for the currently logged in admin user if provided
       if (req.body.password) {
-        user.password = req.body.password;
+        const loggedInUser = await User.findById(req.user._id);
+        if (loggedInUser) {
+          loggedInUser.password = req.body.password;
+          await loggedInUser.save();
+        }
       }
 
       const updatedUser = await user.save();
-
       res.json(updatedUser);
     } else {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'Profil tidak ditemukan' });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -208,6 +349,8 @@ const updateProfile = async (req, res) => {
 module.exports = {
   loginAdmin,
   registerAdmin,
+  forgotPassword,
+  resetPassword,
   getProfile,
   updateProfile,
 };

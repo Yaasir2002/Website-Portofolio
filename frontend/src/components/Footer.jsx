@@ -1,6 +1,5 @@
 import React from 'react';
-import { ArrowUp, Heart, Shield } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ArrowUp } from 'lucide-react';
 
 export default function Footer({ profile }) {
   const scrollToTop = () => {
@@ -21,16 +20,7 @@ export default function Footer({ profile }) {
           </p>
         </div>
 
-        {/* Center: Admin Portal Link */}
-        <div className="flex items-center gap-4 text-xs">
-          <Link
-            to="/admin/login"
-            className="text-gray-400 hover:text-accent-cyan transition-colors flex items-center gap-1.5 font-medium"
-          >
-            <Shield className="w-3.5 h-3.5" />
-            <span>Login Admin Panel</span>
-          </Link>
-        </div>
+
 
         {/* Right: Back to Top Button */}
         <button
