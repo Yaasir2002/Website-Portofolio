@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Build
+dist/
+build/
+
+# Coverage
+coverage/
+
+# Cache
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+tmp/
+temp/
+
+# MongoDB
+mongodb-data/
+
+# Uploads (jika tidak ingin upload file user)
+uploads/
+
+# Testing
+.nyc_output/
+
+# Package lock (opsional)
+# package-lock.json
+
+# Misc
+*.zip
+*.rar
