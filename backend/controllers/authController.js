@@ -5,7 +5,7 @@ const User = require('../models/User');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'super_secret_jwt_key_portfolio_2026_change_this_in_production', {
-    expiresIn: '7d',
+    expiresIn: '30m',
   });
 };
 
@@ -240,6 +240,20 @@ const resetPassword = async (req, res) => {
   }
 };
 
+// @desc Get currently logged in admin user session data
+// @route GET /api/auth/me
+const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'Sesi admin tidak ditemukan' });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc Get site profile data (public & admin)
 // @route GET /api/auth/profile
 const getProfile = async (req, res) => {
@@ -351,6 +365,7 @@ module.exports = {
   registerAdmin,
   forgotPassword,
   resetPassword,
+  getMe,
   getProfile,
   updateProfile,
 };

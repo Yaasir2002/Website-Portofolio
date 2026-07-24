@@ -21,4 +21,23 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Interceptor to handle session expiration (401 Unauthorized)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Clear expired session data
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminUser');
+      localStorage.removeItem('adminLoginTime');
+      
+      // If currently on an admin route, redirect to login page
+      if (window.location.pathname.startsWith('/admin') && !window.location.pathname.includes('/admin/login')) {
+        window.location.href = '/admin/login?session=expired';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;
