@@ -1,6 +1,6 @@
 # 🚀 Full-Stack Personal Portfolio & Admin Dashboard
 
-Website Portofolio Personal Full-Stack dengan tampilan minimalis, animasi dinamis (Framer Motion, Custom Cursor, Scroll Reveal), dan dilengkapi Dashboard Admin untuk mengelola konten, kategori, profil, serta analisis pengunjung secara real-time.
+Website Portofolio Personal Full-Stack dengan tampilan minimalis, animasi dinamis, dan dilengkapi Dashboard Admin untuk mengelola konten, kategori, profil.
 
 ---
 
