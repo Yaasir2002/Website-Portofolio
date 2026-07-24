@@ -32,6 +32,81 @@ const loginAdmin = async (req, res) => {
   }
 };
 
+// @desc Register a new admin account via API
+// @route POST /api/auth/register
+const registerAdmin = async (req, res) => {
+  const { username, password, name, title, secretKey } = req.body;
+
+  try {
+    if (!username || !password) {
+      return res.status(400).json({ message: 'Username dan password wajib diisi' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password minimal 6 karakter' });
+    }
+
+    const userCount = await User.countDocuments();
+    const envSecretKey = process.env.ADMIN_SECRET_KEY || 'super_secret_admin_key_2026';
+
+    // Security check: if an admin exists, require either a valid Bearer token OR valid secretKey
+    if (userCount > 0) {
+      let isAuthorized = false;
+
+      // Check Bearer Token in headers
+      if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        try {
+          const token = req.headers.authorization.split(' ')[1];
+          const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET || 'super_secret_jwt_key_portfolio_2026_change_this_in_production'
+          );
+          if (decoded && decoded.id) isAuthorized = true;
+        } catch (e) {
+          // Token invalid or expired
+        }
+      }
+
+      // Check secretKey in request body
+      if (secretKey && secretKey === envSecretKey) {
+        isAuthorized = true;
+      }
+
+      if (!isAuthorized) {
+        return res.status(403).json({
+          message: 'Pendaftaran admin memerlukan token admin yang sedang login atau secretKey yang valid',
+        });
+      }
+    }
+
+    // Check if username already exists
+    const userExists = await User.findOne({ username });
+    if (userExists) {
+      return res.status(400).json({ message: 'Username sudah terdaftar' });
+    }
+
+    const user = new User({
+      username,
+      password, // Hashed automatically by Mongoose pre('save') hook
+      name: name || 'Alex Rivera',
+      title: title || 'Creative Designer & Full-Stack Developer',
+    });
+
+    const createdUser = await user.save();
+
+    res.status(201).json({
+      _id: createdUser._id,
+      username: createdUser.username,
+      name: createdUser.name,
+      title: createdUser.title,
+      token: generateToken(createdUser._id),
+      message: 'Akun Admin baru berhasil didaftarkan!',
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc Get site profile data (public & admin)
 // @route GET /api/auth/profile
 const getProfile = async (req, res) => {
@@ -132,6 +207,7 @@ const updateProfile = async (req, res) => {
 
 module.exports = {
   loginAdmin,
+  registerAdmin,
   getProfile,
   updateProfile,
 };

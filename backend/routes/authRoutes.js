@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { loginAdmin, getProfile, updateProfile } = require('../controllers/authController');
+const { loginAdmin, registerAdmin, getProfile, updateProfile } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 
 router.post('/login', loginAdmin);
+router.post('/register', registerAdmin);
 router.get('/profile', getProfile);
 router.put('/profile', protect, updateProfile);
 

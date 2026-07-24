@@ -69,6 +69,30 @@ export default function AdminProfile() {
   // Tool icon form
   const [toolForm, setToolForm] = useState({ name: '', icon: '' });
 
+  // New Admin registration state
+  const [newAdminForm, setNewAdminForm] = useState({ username: '', password: '', name: '' });
+  const [adminRegisterStatus, setAdminRegisterStatus] = useState(null);
+  const [registeringAdmin, setRegisteringAdmin] = useState(false);
+
+  const handleRegisterNewAdmin = async (e) => {
+    e.preventDefault();
+    setRegisteringAdmin(true);
+    setAdminRegisterStatus(null);
+
+    try {
+      const res = await api.post('/auth/register', newAdminForm);
+      setAdminRegisterStatus({ type: 'success', text: res.data?.message || 'Akun Admin baru berhasil dibuat!' });
+      setNewAdminForm({ username: '', password: '', name: '' });
+    } catch (err) {
+      setAdminRegisterStatus({
+        type: 'error',
+        text: err.response?.data?.message || 'Gagal membuat akun admin baru.',
+      });
+    } finally {
+      setRegisteringAdmin(false);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       setFormData({
@@ -578,6 +602,67 @@ export default function AdminProfile() {
                 />
               </div>
             </div>
+          </div>
+
+          {/* Admin User Management Section */}
+          <div className="space-y-4 pt-6 border-t border-white/10">
+            <h3 className="font-display font-bold text-base text-white flex items-center gap-2">
+              <User className="w-4 h-4 text-accent-cyan" />
+              <span>Daftarkan Akun Admin Baru (Pendaftaran via API / UI)</span>
+            </h3>
+            <p className="text-xs text-gray-400">
+              Buat akun admin tambahan untuk mengakses Dashboard Admin.
+            </p>
+
+            {adminRegisterStatus && (
+              <div
+                className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+                  adminRegisterStatus.type === 'success'
+                    ? 'bg-accent-emerald/15 text-accent-emerald'
+                    : 'bg-red-500/15 text-red-400'
+                }`}
+              >
+                {adminRegisterStatus.type === 'success' ? (
+                  <CheckCircle2 className="w-4 h-4" />
+                ) : (
+                  <AlertCircle className="w-4 h-4" />
+                )}
+                <span>{adminRegisterStatus.text}</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <input
+                type="text"
+                placeholder="Username Admin *"
+                value={newAdminForm.username}
+                onChange={(e) => setNewAdminForm({ ...newAdminForm, username: e.target.value })}
+                className="px-4 py-2.5 rounded-xl glass-input text-xs"
+              />
+              <input
+                type="password"
+                placeholder="Password (min 6 kar) *"
+                value={newAdminForm.password}
+                onChange={(e) => setNewAdminForm({ ...newAdminForm, password: e.target.value })}
+                className="px-4 py-2.5 rounded-xl glass-input text-xs"
+              />
+              <input
+                type="text"
+                placeholder="Nama Pengelola"
+                value={newAdminForm.name}
+                onChange={(e) => setNewAdminForm({ ...newAdminForm, name: e.target.value })}
+                className="px-4 py-2.5 rounded-xl glass-input text-xs"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleRegisterNewAdmin}
+              disabled={registeringAdmin}
+              className="px-5 py-2.5 rounded-xl bg-accent-cyan/20 text-accent-cyan border border-accent-cyan/40 hover:bg-accent-cyan/30 text-xs font-bold transition-all disabled:opacity-50"
+            >
+              {registeringAdmin ? 'Mendaftarkan...' : '+ Buat Akun Admin Baru'}
+            </button>
           </div>
 
           <button
