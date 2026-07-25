@@ -103,7 +103,9 @@ export default function AdminLogin() {
     } catch (err) {
       setStatus({
         type: 'error',
-        text: err.response?.data?.message || 'Gagal merestrukturasi akun admin baru.',
+        text:
+          err.response?.data?.message ||
+          'Gagal mendaftarkan akun admin baru. Jika database sudah berisi admin, wajib mengisikan Kode Keamanan (Secret Key).',
       });
     } finally {
       setSubmitting(false);
