@@ -23,8 +23,14 @@ router.post('/upload', protect, upload.single('media'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No file uploaded' });
   }
-  const filePath = `/uploads/${req.file.filename}`;
-  const isVideo = req.file.mimetype.startsWith('video');
+
+  const filePath = req.file.path && (req.file.path.startsWith('http') || req.file.path.startsWith('https'))
+    ? req.file.path
+    : req.file.secure_url
+    ? req.file.secure_url
+    : `/uploads/${req.file.filename}`;
+
+  const isVideo = req.file.mimetype ? req.file.mimetype.startsWith('video') : false;
   res.json({
     filePath,
     mediaType: isVideo ? 'video' : 'image',

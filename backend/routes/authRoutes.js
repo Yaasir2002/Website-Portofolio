@@ -24,7 +24,13 @@ router.post('/upload-avatar', protect, upload.single('avatar'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No file uploaded' });
   }
-  const filePath = `/uploads/${req.file.filename}`;
+
+  const filePath = req.file.path && (req.file.path.startsWith('http') || req.file.path.startsWith('https'))
+    ? req.file.path
+    : req.file.secure_url
+    ? req.file.secure_url
+    : `/uploads/${req.file.filename}`;
+
   res.json({ filePath });
 });
 
