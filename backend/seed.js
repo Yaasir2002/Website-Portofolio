@@ -123,9 +123,12 @@ const seedData = async () => {
     await Message.deleteMany({});
 
     // Create Admin User
+    const initialUsername = process.env.INITIAL_ADMIN_USERNAME || 'admin_master';
+    const initialPassword = process.env.INITIAL_ADMIN_PASSWORD || 'PortfolioAdmin#2026';
+
     const adminUser = new User({
-      username: 'admin',
-      password: 'admin123', // Will be hashed via pre-save hook
+      username: initialUsername,
+      password: initialPassword, // Will be hashed via pre-save hook
       name: 'Alex Rivera',
       title: 'Creative Designer & Full-Stack Developer',
       bio: 'Saya seorang desainer dan pengembang web apasionat yang berfokus menciptakan pengalaman digital modern, interaktif, dan berestetika tinggi.',
@@ -235,7 +238,7 @@ const seedData = async () => {
     });
 
     await adminUser.save();
-    console.log('Default Admin created (username: admin, password: admin123)');
+    console.log(`Default Admin created (username: ${initialUsername}, password: ${initialPassword})`);
 
     // Seed Categories
     await Category.insertMany(categoriesData);
