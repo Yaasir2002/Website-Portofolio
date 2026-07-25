@@ -7,6 +7,7 @@ import Skills from '../components/Skills';
 import Contact from '../components/Contact';
 import Footer from '../components/Footer';
 import CustomCursor from '../components/CustomCursor';
+import SEO from '../components/SEO';
 import api from '../services/api';
 
 export default function Home() {
@@ -26,7 +27,7 @@ export default function Home() {
         const res = await api.get('/auth/profile');
         setProfile(res.data);
       } catch (err) {
-        console.log('Using default profile data');
+        console.error('Error loading home profile:', err);
       }
     };
 
@@ -34,7 +35,12 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-dark-900 text-gray-100 font-sans custom-cursor-active">
+    <div className="min-h-screen bg-dark-900 text-gray-100 relative">
+      <SEO
+        title={profile?.name ? `${profile.name} — ${profile.title}` : undefined}
+        description={profile?.bio}
+        image={profile?.avatar}
+      />
       <CustomCursor />
       <Navbar profile={profile} />
       <main>

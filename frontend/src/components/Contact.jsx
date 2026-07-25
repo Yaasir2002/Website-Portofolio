@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { toast } from 'react-hot-toast';
 import { Mail, Send, CheckCircle2, AlertCircle, MapPin, Phone, Github, Linkedin, Dribbble, Instagram, Twitter } from 'lucide-react';
 import api from '../services/api';
 
@@ -24,17 +25,15 @@ export default function Contact({ profile }) {
 
     try {
       const res = await api.post('/messages', formData);
-      setStatus({
-        type: 'success',
-        text: res.data?.message || 'Pesan Anda berhasil terkirim! Saya akan merespon sesegera mungkin.',
-      });
+      const msg = res.data?.message || 'Pesan Anda berhasil terkirim! Saya akan merespon sesegera mungkin.';
+      setStatus({ type: 'success', text: msg });
+      toast.success(msg);
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (err) {
       console.error(err);
-      setStatus({
-        type: 'error',
-        text: err.response?.data?.message || 'Gagal mengirim pesan. Silakan coba lagi atau kirim via email langsung.',
-      });
+      const errMsg = err.response?.data?.message || 'Gagal mengirim pesan. Silakan coba lagi.';
+      setStatus({ type: 'error', text: errMsg });
+      toast.error(errMsg);
     } finally {
       setSubmitting(false);
     }

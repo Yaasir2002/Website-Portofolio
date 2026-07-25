@@ -1,0 +1,17 @@
+{
+  "short_name": "Portfolio",
+  "name": "Personal Portfolio & Work Gallery",
+  "description": "Portofolio Personal Interaktif, Karya UI/UX, Web Development, dan Branding",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512 192x192 64x64 32x32"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0B0F19",
+  "theme_color": "#0B0F19",
+  "display": "standalone",
+  "orientation": "portrait"
+}

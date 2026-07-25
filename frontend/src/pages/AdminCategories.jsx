@@ -29,10 +29,14 @@ export default function AdminCategories() {
     try {
       if (editingId) {
         await api.put(`/categories/${editingId}`, { name, description });
-        setStatus({ type: 'success', text: 'Kategori berhasil diperbarui!' });
+        const msg = 'Kategori berhasil diperbarui!';
+        setStatus({ type: 'success', text: msg });
+        toast.success(msg);
       } else {
         await api.post('/categories', { name, description });
-        setStatus({ type: 'success', text: 'Kategori baru ditambahkan!' });
+        const msg = 'Kategori baru ditambahkan!';
+        setStatus({ type: 'success', text: msg });
+        toast.success(msg);
       }
 
       setName('');
@@ -40,10 +44,9 @@ export default function AdminCategories() {
       setEditingId(null);
       fetchCategories();
     } catch (err) {
-      setStatus({
-        type: 'error',
-        text: err.response?.data?.message || 'Gagal menyimpan kategori.',
-      });
+      const errMsg = err.response?.data?.message || 'Gagal menyimpan kategori.';
+      setStatus({ type: 'error', text: errMsg });
+      toast.error(errMsg);
     }
   };
 
@@ -54,12 +57,13 @@ export default function AdminCategories() {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Hapus kategori ini? Portofolio terkait mungkin terdampak.')) {
+    if (window.confirm('Hapus kategori ini? Portofolio terkait mungkin perlu dikategorikan ulang.')) {
       try {
         await api.delete(`/categories/${id}`);
+        toast.success('Kategori berhasil dihapus!');
         fetchCategories();
       } catch (err) {
-        alert('Gagal menghapus kategori.');
+        toast.error('Gagal menghapus kategori.');
       }
     }
   };

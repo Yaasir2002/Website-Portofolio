@@ -123,17 +123,21 @@ export default function AdminPortfolios() {
     setStatus(null);
 
     if (!formData.thumbnail) {
-      alert('Upload gambar/video thumbnail terlebih dahulu!');
+      toast.error('Upload gambar/video thumbnail terlebih dahulu!');
       return;
     }
 
     try {
       if (editingItem) {
         await api.put(`/portfolios/${editingItem._id}`, formData);
-        setStatus({ type: 'success', text: 'Portofolio berhasil diperbarui!' });
+        const msg = 'Portofolio berhasil diperbarui!';
+        setStatus({ type: 'success', text: msg });
+        toast.success(msg);
       } else {
         await api.post('/portfolios', formData);
-        setStatus({ type: 'success', text: 'Portofolio baru berhasil ditambahkan!' });
+        const msg = 'Portofolio baru berhasil ditambahkan!';
+        setStatus({ type: 'success', text: msg });
+        toast.success(msg);
       }
 
       fetchPortfolios();
@@ -142,10 +146,12 @@ export default function AdminPortfolios() {
         setStatus(null);
       }, 1000);
     } catch (err) {
+      const errMsg = err.response?.data?.message || 'Gagal menyimpan portofolio.';
       setStatus({
         type: 'error',
-        text: err.response?.data?.message || 'Gagal menyimpan portofolio.',
+        text: errMsg,
       });
+      toast.error(errMsg);
     }
   };
 
@@ -153,9 +159,10 @@ export default function AdminPortfolios() {
     if (window.confirm('Apakah Anda yakin ingin menghapus item portofolio ini?')) {
       try {
         await api.delete(`/portfolios/${id}`);
+        toast.success('Portofolio berhasil dihapus!');
         fetchPortfolios();
       } catch (err) {
-        alert('Gagal menghapus portofolio.');
+        toast.error('Gagal menghapus portofolio.');
       }
     }
   };

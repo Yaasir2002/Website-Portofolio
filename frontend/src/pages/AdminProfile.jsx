@@ -81,13 +81,17 @@ export default function AdminProfile() {
 
     try {
       const res = await api.post('/auth/register', newAdminForm);
-      setAdminRegisterStatus({ type: 'success', text: res.data?.message || 'Akun Admin baru berhasil dibuat!' });
+      const msg = res.data?.message || 'Akun Admin baru berhasil dibuat!';
+      setAdminRegisterStatus({ type: 'success', text: msg });
+      toast.success(msg);
       setNewAdminForm({ username: '', password: '', name: '' });
     } catch (err) {
+      const errMsg = err.response?.data?.message || 'Gagal membuat akun admin baru.';
       setAdminRegisterStatus({
         type: 'error',
-        text: err.response?.data?.message || 'Gagal membuat akun admin baru.',
+        text: errMsg,
       });
+      toast.error(errMsg);
     } finally {
       setRegisteringAdmin(false);
     }
