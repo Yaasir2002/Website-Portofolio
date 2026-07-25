@@ -122,9 +122,9 @@ const seedData = async () => {
     await Visitor.deleteMany({});
     await Message.deleteMany({});
 
-    // Create Admin User
-    const initialUsername = process.env.INITIAL_ADMIN_USERNAME || 'admin_master';
-    const initialPassword = process.env.INITIAL_ADMIN_PASSWORD || 'PortfolioAdmin#2026';
+    // Create Admin User (Reads private credentials from local .env)
+    const initialUsername = process.env.INITIAL_ADMIN_USERNAME || 'admin';
+    const initialPassword = process.env.INITIAL_ADMIN_PASSWORD || 'password123';
 
     const adminUser = new User({
       username: initialUsername,
