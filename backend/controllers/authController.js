@@ -52,8 +52,8 @@ const sendResetEmail = async (email, resetUrl) => {
 // @desc Auth admin & get token
 // @route POST /api/auth/login
 const loginAdmin = async (req, res) => {
-  const { username, password } = req.body;
-
+  try {
+    const { username, password } = req.body || {};
     const cleanUsername = (username || '').trim();
     const cleanPassword = (password || '').trim();
     const user = await User.findOne({ username: { $regex: new RegExp(`^${cleanUsername}$`, 'i') } });
