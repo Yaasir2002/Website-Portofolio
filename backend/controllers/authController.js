@@ -54,10 +54,11 @@ const sendResetEmail = async (email, resetUrl) => {
 const loginAdmin = async (req, res) => {
   const { username, password } = req.body;
 
-  try {
-    const user = await User.findOne({ username });
+    const cleanUsername = (username || '').trim();
+    const cleanPassword = (password || '').trim();
+    const user = await User.findOne({ username: { $regex: new RegExp(`^${cleanUsername}$`, 'i') } });
 
-    if (user && (await user.matchPassword(password))) {
+    if (user && (await user.matchPassword(cleanPassword))) {
       res.json({
         _id: user._id,
         username: user.username,
