@@ -12,6 +12,9 @@ dotenv.config();
 
 const app = express();
 
+// Trust reverse proxy (Nginx, Vercel, Cloudflare) for accurate IP rate limiting
+app.set('trust proxy', 1);
+
 // Connect Database
 connectDB();
 
