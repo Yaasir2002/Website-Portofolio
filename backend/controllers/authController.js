@@ -335,22 +335,27 @@ const updateProfile = async (req, res) => {
 
       if (req.body.experiences !== undefined) {
         user.experiences = req.body.experiences;
+        user.markModified('experiences');
       }
 
       if (req.body.education !== undefined) {
         user.education = req.body.education;
+        user.markModified('education');
       }
 
       if (req.body.certifications !== undefined) {
         user.certifications = req.body.certifications;
+        user.markModified('certifications');
       }
 
       if (req.body.skillCategories !== undefined) {
         user.skillCategories = req.body.skillCategories;
+        user.markModified('skillCategories');
       }
 
       if (req.body.toolsIcons !== undefined) {
         user.toolsIcons = req.body.toolsIcons;
+        user.markModified('toolsIcons');
       }
 
       // Only update password for the currently logged in admin user if provided
