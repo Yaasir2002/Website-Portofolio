@@ -289,6 +289,7 @@ const getProfile = async (req, res) => {
         },
         experiences: [],
         education: [],
+        certifications: [],
         skillCategories: [],
         toolsIcons: [],
       });
@@ -338,6 +339,10 @@ const updateProfile = async (req, res) => {
 
       if (req.body.education !== undefined) {
         user.education = req.body.education;
+      }
+
+      if (req.body.certifications !== undefined) {
+        user.certifications = req.body.certifications;
       }
 
       if (req.body.skillCategories !== undefined) {
