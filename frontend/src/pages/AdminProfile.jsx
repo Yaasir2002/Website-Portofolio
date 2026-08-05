@@ -178,28 +178,36 @@ export default function AdminProfile() {
     setExpModalOpen(true);
   };
 
-  const handleSaveExp = (e) => {
+  const handleSaveExp = async (e) => {
     e.preventDefault();
-    const updated = [...formData.experiences];
-    if (editingExpIndex !== null) {
-      updated[editingExpIndex] = expForm;
-    } else {
-      updated.push(expForm);
-    }
-    const newFormData = { ...formData, experiences: updated };
-    setFormData(newFormData);
-    setExpModalOpen(false);
-    updateProfileData(newFormData);
-    setStatus({ type: 'success', text: 'Pengalaman kerja diperbarui!' });
-  };
-
-  const handleDeleteExp = (index) => {
-    if (window.confirm('Hapus item pengalaman kerja ini?')) {
-      const updated = formData.experiences.filter((_, i) => i !== index);
+    try {
+      const updated = [...formData.experiences];
+      if (editingExpIndex !== null) {
+        updated[editingExpIndex] = expForm;
+      } else {
+        updated.push(expForm);
+      }
       const newFormData = { ...formData, experiences: updated };
       setFormData(newFormData);
-      updateProfileData(newFormData);
-      setStatus({ type: 'success', text: 'Pengalaman kerja dihapus!' });
+      setExpModalOpen(false);
+      await updateProfileData(newFormData);
+      setStatus({ type: 'success', text: 'Pengalaman kerja berhasil disimpan!' });
+    } catch (err) {
+      setStatus({ type: 'error', text: 'Gagal menyimpan pengalaman kerja.' });
+    }
+  };
+
+  const handleDeleteExp = async (index) => {
+    if (window.confirm('Hapus item pengalaman kerja ini?')) {
+      try {
+        const updated = formData.experiences.filter((_, i) => i !== index);
+        const newFormData = { ...formData, experiences: updated };
+        setFormData(newFormData);
+        await updateProfileData(newFormData);
+        setStatus({ type: 'success', text: 'Pengalaman kerja dihapus!' });
+      } catch (err) {
+        setStatus({ type: 'error', text: 'Gagal menghapus pengalaman kerja.' });
+      }
     }
   };
 
@@ -216,28 +224,36 @@ export default function AdminProfile() {
     setEduModalOpen(true);
   };
 
-  const handleSaveEdu = (e) => {
+  const handleSaveEdu = async (e) => {
     e.preventDefault();
-    const updated = [...formData.education];
-    if (editingEduIndex !== null) {
-      updated[editingEduIndex] = eduForm;
-    } else {
-      updated.push(eduForm);
-    }
-    const newFormData = { ...formData, education: updated };
-    setFormData(newFormData);
-    setEduModalOpen(false);
-    updateProfileData(newFormData);
-    setStatus({ type: 'success', text: 'Edukasi / sertifikasi diperbarui!' });
-  };
-
-  const handleDeleteEdu = (index) => {
-    if (window.confirm('Hapus item edukasi ini?')) {
-      const updated = formData.education.filter((_, i) => i !== index);
+    try {
+      const updated = [...formData.education];
+      if (editingEduIndex !== null) {
+        updated[editingEduIndex] = eduForm;
+      } else {
+        updated.push(eduForm);
+      }
       const newFormData = { ...formData, education: updated };
       setFormData(newFormData);
-      updateProfileData(newFormData);
-      setStatus({ type: 'success', text: 'Edukasi dihapus!' });
+      setEduModalOpen(false);
+      await updateProfileData(newFormData);
+      setStatus({ type: 'success', text: 'Edukasi / pendidikan berhasil disimpan!' });
+    } catch (err) {
+      setStatus({ type: 'error', text: 'Gagal menyimpan edukasi.' });
+    }
+  };
+
+  const handleDeleteEdu = async (index) => {
+    if (window.confirm('Hapus item edukasi ini?')) {
+      try {
+        const updated = formData.education.filter((_, i) => i !== index);
+        const newFormData = { ...formData, education: updated };
+        setFormData(newFormData);
+        await updateProfileData(newFormData);
+        setStatus({ type: 'success', text: 'Edukasi dihapus!' });
+      } catch (err) {
+        setStatus({ type: 'error', text: 'Gagal menghapus edukasi.' });
+      }
     }
   };
 
@@ -254,28 +270,36 @@ export default function AdminProfile() {
     setCertModalOpen(true);
   };
 
-  const handleSaveCert = (e) => {
+  const handleSaveCert = async (e) => {
     e.preventDefault();
-    const updated = [...(formData.certifications || [])];
-    if (editingCertIndex !== null) {
-      updated[editingCertIndex] = certForm;
-    } else {
-      updated.push(certForm);
-    }
-    const newFormData = { ...formData, certifications: updated };
-    setFormData(newFormData);
-    setCertModalOpen(false);
-    updateProfileData(newFormData);
-    setStatus({ type: 'success', text: 'Sertifikasi diperbarui!' });
-  };
-
-  const handleDeleteCert = (index) => {
-    if (window.confirm('Hapus item sertifikasi ini?')) {
-      const updated = formData.certifications.filter((_, i) => i !== index);
+    try {
+      const updated = [...(formData.certifications || [])];
+      if (editingCertIndex !== null) {
+        updated[editingCertIndex] = certForm;
+      } else {
+        updated.push(certForm);
+      }
       const newFormData = { ...formData, certifications: updated };
       setFormData(newFormData);
-      updateProfileData(newFormData);
-      setStatus({ type: 'success', text: 'Sertifikasi dihapus!' });
+      setCertModalOpen(false);
+      await updateProfileData(newFormData);
+      setStatus({ type: 'success', text: 'Sertifikasi berhasil disimpan!' });
+    } catch (err) {
+      setStatus({ type: 'error', text: 'Gagal menyimpan sertifikasi.' });
+    }
+  };
+
+  const handleDeleteCert = async (index) => {
+    if (window.confirm('Hapus item sertifikasi ini?')) {
+      try {
+        const updated = formData.certifications.filter((_, i) => i !== index);
+        const newFormData = { ...formData, certifications: updated };
+        setFormData(newFormData);
+        await updateProfileData(newFormData);
+        setStatus({ type: 'success', text: 'Sertifikasi dihapus!' });
+      } catch (err) {
+        setStatus({ type: 'error', text: 'Gagal menghapus sertifikasi.' });
+      }
     }
   };
 
