@@ -304,75 +304,59 @@ const getProfile = async (req, res) => {
 // @route PUT /api/auth/profile
 const updateProfile = async (req, res) => {
   try {
-    // Find the primary site profile document (first user) or fallback to current logged in admin
     let user = await User.findOne();
     if (!user) {
       user = await User.findById(req.user._id);
     }
 
-    if (user) {
-      user.name = req.body.name !== undefined ? req.body.name : user.name;
-      user.title = req.body.title !== undefined ? req.body.title : user.title;
-      user.bio = req.body.bio !== undefined ? req.body.bio : user.bio;
-      user.location = req.body.location !== undefined ? req.body.location : user.location;
-      user.email = req.body.email !== undefined ? req.body.email : user.email;
-
-      if (req.body.avatar) {
-        user.avatar = req.body.avatar;
-      }
-
-      if (req.body.logo !== undefined) {
-        user.logo = req.body.logo;
-      }
-
-      if (req.body.socialLinks) {
-        user.socialLinks = { ...user.socialLinks, ...req.body.socialLinks };
-      }
-
-      if (req.body.stats) {
-        user.stats = { ...user.stats, ...req.body.stats };
-      }
-
-      if (req.body.experiences !== undefined) {
-        user.experiences = req.body.experiences;
-        user.markModified('experiences');
-      }
-
-      if (req.body.education !== undefined) {
-        user.education = req.body.education;
-        user.markModified('education');
-      }
-
-      if (req.body.certifications !== undefined) {
-        user.certifications = req.body.certifications;
-        user.markModified('certifications');
-      }
-
-      if (req.body.skillCategories !== undefined) {
-        user.skillCategories = req.body.skillCategories;
-        user.markModified('skillCategories');
-      }
-
-      if (req.body.toolsIcons !== undefined) {
-        user.toolsIcons = req.body.toolsIcons;
-        user.markModified('toolsIcons');
-      }
-
-      // Only update password for the currently logged in admin user if provided
-      if (req.body.password) {
-        const loggedInUser = await User.findById(req.user._id);
-        if (loggedInUser) {
-          loggedInUser.password = req.body.password;
-          await loggedInUser.save();
-        }
-      }
-
-      const updatedUser = await user.save();
-      res.json(updatedUser);
-    } else {
-      res.status(404).json({ message: 'Profil tidak ditemukan' });
+    if (!user) {
+      return res.status(404).json({ message: 'Profil tidak ditemukan' });
     }
+
+    const updateFields = {};
+
+    if (req.body.name !== undefined) updateFields.name = req.body.name;
+    if (req.body.title !== undefined) updateFields.title = req.body.title;
+    if (req.body.bio !== undefined) updateFields.bio = req.body.bio;
+    if (req.body.location !== undefined) updateFields.location = req.body.location;
+    if (req.body.email !== undefined) updateFields.email = req.body.email;
+    if (req.body.avatar !== undefined) updateFields.avatar = req.body.avatar;
+    if (req.body.logo !== undefined) updateFields.logo = req.body.logo;
+
+    if (req.body.socialLinks) {
+      updateFields.socialLinks = { ...(user.socialLinks || {}), ...req.body.socialLinks };
+    }
+
+    if (req.body.stats) {
+      updateFields.stats = { ...(user.stats || {}), ...req.body.stats };
+    }
+
+    if (req.body.experiences !== undefined) updateFields.experiences = req.body.experiences;
+    if (req.body.education !== undefined) updateFields.education = req.body.education;
+    if (req.body.certifications !== undefined) updateFields.certifications = req.body.certifications;
+    if (req.body.skillCategories !== undefined) updateFields.skillCategories = req.body.skillCategories;
+    if (req.body.toolsIcons !== undefined) updateFields.toolsIcons = req.body.toolsIcons;
+
+    // Password update for logged in user if provided
+    if (req.body.password) {
+      const loggedInUser = await User.findById(req.user._id);
+      if (loggedInUser) {
+        loggedInUser.password = req.body.password;
+        await loggedInUser.save();
+      }
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      user._id,
+      { $set: updateFields },
+      { new: true, runValidators: false }
+    );
+
+    res.json(updatedUser);
   } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
     res.status(500).json({ message: error.message });
   }
 };
