@@ -69,6 +69,15 @@ const userSchema = new mongoose.Schema(
         description: String,
       },
     ],
+    certifications: [
+      {
+        year: String,
+        title: String,
+        issuer: String,
+        credentialUrl: String,
+        description: String,
+      },
+    ],
     skillCategories: [
       {
         title: String,

@@ -44,6 +44,7 @@ export default function AdminProfile() {
     },
     experiences: [],
     education: [],
+    certifications: [],
     skillCategories: [],
     toolsIcons: [],
   });
@@ -60,6 +61,11 @@ export default function AdminProfile() {
   const [eduModalOpen, setEduModalOpen] = useState(false);
   const [editingEduIndex, setEditingEduIndex] = useState(null);
   const [eduForm, setEduForm] = useState({ period: '', degree: '', institution: '', description: '' });
+
+  // Modal / Editing states for Certifications
+  const [certModalOpen, setCertModalOpen] = useState(false);
+  const [editingCertIndex, setEditingCertIndex] = useState(null);
+  const [certForm, setCertForm] = useState({ year: '', title: '', issuer: '', credentialUrl: '', description: '' });
 
   // Skill category form
   const [catModalOpen, setCatModalOpen] = useState(false);
@@ -120,6 +126,7 @@ export default function AdminProfile() {
         },
         experiences: user.experiences || [],
         education: user.education || [],
+        certifications: user.certifications || [],
         skillCategories: user.skillCategories || [],
         toolsIcons: user.toolsIcons || [],
       });
@@ -231,6 +238,44 @@ export default function AdminProfile() {
       setFormData(newFormData);
       updateProfileData(newFormData);
       setStatus({ type: 'success', text: 'Edukasi dihapus!' });
+    }
+  };
+
+  // --- CERTIFICATION HANDLERS ---
+  const handleOpenAddCert = () => {
+    setEditingCertIndex(null);
+    setCertForm({ year: '', title: '', issuer: '', credentialUrl: '', description: '' });
+    setCertModalOpen(true);
+  };
+
+  const handleOpenEditCert = (index) => {
+    setEditingCertIndex(index);
+    setCertForm(formData.certifications[index]);
+    setCertModalOpen(true);
+  };
+
+  const handleSaveCert = (e) => {
+    e.preventDefault();
+    const updated = [...(formData.certifications || [])];
+    if (editingCertIndex !== null) {
+      updated[editingCertIndex] = certForm;
+    } else {
+      updated.push(certForm);
+    }
+    const newFormData = { ...formData, certifications: updated };
+    setFormData(newFormData);
+    setCertModalOpen(false);
+    updateProfileData(newFormData);
+    setStatus({ type: 'success', text: 'Sertifikasi diperbarui!' });
+  };
+
+  const handleDeleteCert = (index) => {
+    if (window.confirm('Hapus item sertifikasi ini?')) {
+      const updated = formData.certifications.filter((_, i) => i !== index);
+      const newFormData = { ...formData, certifications: updated };
+      setFormData(newFormData);
+      updateProfileData(newFormData);
+      setStatus({ type: 'success', text: 'Sertifikasi dihapus!' });
     }
   };
 
@@ -739,59 +784,119 @@ export default function AdminProfile() {
 
       {/* TAB 3: EDUKASI & SERTIFIKASI */}
       {activeTab === 'education' && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="font-display font-bold text-xl text-white">Daftar Edukasi & Sertifikasi</h3>
-            <button
-              onClick={handleOpenAddEdu}
-              className="px-4 py-2 rounded-xl bg-accent-violet text-white font-display font-bold text-xs flex items-center gap-2 shadow-glow-violet hover:scale-105 transition-all"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Tambah Edukasi / Sertifikasi</span>
-            </button>
+        <div className="space-y-10">
+          {/* Section 1: Pendidikan Formal */}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="font-display font-bold text-xl text-white">Daftar Pendidikan Formal</h3>
+              <button
+                onClick={handleOpenAddEdu}
+                className="px-4 py-2 rounded-xl bg-accent-violet text-white font-display font-bold text-xs flex items-center gap-2 shadow-glow-violet hover:scale-105 transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Tambah Pendidikan Formal</span>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {formData.education.map((edu, index) => (
+                <div
+                  key={index}
+                  className="p-5 rounded-2xl glass-card border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-full bg-accent-violet/15 text-accent-violet font-semibold text-xs">
+                        {edu.period}
+                      </span>
+                      <span className="text-xs text-accent-cyan font-bold">{edu.institution}</span>
+                    </div>
+                    <h4 className="font-display font-bold text-base text-white">{edu.degree}</h4>
+                    <p className="text-xs text-gray-300 max-w-2xl leading-relaxed">{edu.description}</p>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => handleOpenEditEdu(index)}
+                      className="p-2 rounded-lg bg-accent-cyan/15 text-accent-cyan hover:bg-accent-cyan/30"
+                      title="Edit"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteEdu(index)}
+                      className="p-2 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/30"
+                      title="Hapus"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {formData.education.length === 0 && (
+                <div className="text-center py-8 glass-panel rounded-2xl text-gray-400 text-xs">
+                  Belum ada data pendidikan formal. Klik "Tambah Pendidikan Formal" di atas.
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="space-y-4">
-            {formData.education.map((edu, index) => (
-              <div
-                key={index}
-                className="p-5 rounded-2xl glass-card border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+          {/* Section 2: Sertifikasi & Lisensi */}
+          <div className="space-y-6 pt-6 border-t border-white/10">
+            <div className="flex items-center justify-between">
+              <h3 className="font-display font-bold text-xl text-white">Daftar Sertifikasi & Lisensi</h3>
+              <button
+                onClick={handleOpenAddCert}
+                className="px-4 py-2 rounded-xl bg-accent-emerald text-dark-900 font-display font-bold text-xs flex items-center gap-2 shadow-glow-emerald hover:scale-105 transition-all"
               >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-full bg-accent-violet/15 text-accent-violet font-semibold text-xs">
-                      {edu.period}
-                    </span>
-                    <span className="text-xs text-accent-cyan font-bold">{edu.institution}</span>
+                <Plus className="w-4 h-4" />
+                <span>Tambah Sertifikasi</span>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {(formData.certifications || []).map((cert, index) => (
+                <div
+                  key={index}
+                  className="p-5 rounded-2xl glass-card border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-full bg-accent-emerald/15 text-accent-emerald font-semibold text-xs">
+                        {cert.year}
+                      </span>
+                      <span className="text-xs text-accent-cyan font-bold">{cert.issuer}</span>
+                    </div>
+                    <h4 className="font-display font-bold text-base text-white">{cert.title}</h4>
+                    <p className="text-xs text-gray-300 max-w-2xl leading-relaxed">{cert.description}</p>
                   </div>
-                  <h4 className="font-display font-bold text-base text-white">{edu.degree}</h4>
-                  <p className="text-xs text-gray-300 max-w-2xl leading-relaxed">{edu.description}</p>
-                </div>
 
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <button
-                    onClick={() => handleOpenEditEdu(index)}
-                    className="p-2 rounded-lg bg-accent-cyan/15 text-accent-cyan hover:bg-accent-cyan/30"
-                    title="Edit"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteEdu(index)}
-                    className="p-2 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/30"
-                    title="Hapus"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => handleOpenEditCert(index)}
+                      className="p-2 rounded-lg bg-accent-cyan/15 text-accent-cyan hover:bg-accent-cyan/30"
+                      title="Edit"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCert(index)}
+                      className="p-2 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/30"
+                      title="Hapus"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
 
-            {formData.education.length === 0 && (
-              <div className="text-center py-10 glass-panel rounded-2xl text-gray-400 text-xs">
-                Belum ada data edukasi/sertifikasi. Klik "Tambah Edukasi / Sertifikasi" di atas.
-              </div>
-            )}
+              {(!formData.certifications || formData.certifications.length === 0) && (
+                <div className="text-center py-8 glass-panel rounded-2xl text-gray-400 text-xs">
+                  Belum ada data sertifikasi. Klik "Tambah Sertifikasi" di atas.
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -1038,6 +1143,87 @@ export default function AdminProfile() {
                 className="w-full py-3 rounded-xl bg-accent-violet text-white font-display font-bold shadow-glow-violet hover:scale-[1.01] transition-all"
               >
                 Simpan Edukasi
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- MODAL FOR CERTIFICATIONS --- */}
+      {certModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-dark-900/80 backdrop-blur-md" onClick={() => setCertModalOpen(false)} />
+          <div className="relative w-full max-w-lg bg-dark-800 border border-white/15 rounded-3xl p-6 shadow-2xl z-10 space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h3 className="font-display font-bold text-lg text-white">
+                {editingCertIndex !== null ? 'Edit Sertifikasi & Lisensi' : 'Tambah Sertifikasi & Lisensi'}
+              </h3>
+              <button onClick={() => setCertModalOpen(false)} className="text-gray-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCert} className="space-y-3 text-xs sm:text-sm">
+              <div className="space-y-1">
+                <label className="font-semibold text-gray-300">Tahun (contoh: 2025)</label>
+                <input
+                  type="text"
+                  required
+                  value={certForm.year}
+                  onChange={(e) => setCertForm({ ...certForm, year: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl glass-input"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold text-gray-300">Nama Sertifikasi / Lisensi *</label>
+                <input
+                  type="text"
+                  required
+                  value={certForm.title}
+                  onChange={(e) => setCertForm({ ...certForm, title: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl glass-input"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold text-gray-300">Penerbit / Organisasi *</label>
+                <input
+                  type="text"
+                  required
+                  value={certForm.issuer}
+                  onChange={(e) => setCertForm({ ...certForm, issuer: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl glass-input"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold text-gray-300">Tautan Kredensial Resmi (opsional)</label>
+                <input
+                  type="url"
+                  placeholder="https://credential.example.com"
+                  value={certForm.credentialUrl}
+                  onChange={(e) => setCertForm({ ...certForm, credentialUrl: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl glass-input"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold text-gray-300">Deskripsi Singkat *</label>
+                <textarea
+                  rows={3}
+                  required
+                  value={certForm.description}
+                  onChange={(e) => setCertForm({ ...certForm, description: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl glass-input resize-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 rounded-xl bg-accent-emerald text-dark-900 font-display font-bold shadow-glow-emerald hover:scale-[1.01] transition-all"
+              >
+                Simpan Sertifikasi
               </button>
             </form>
           </div>
